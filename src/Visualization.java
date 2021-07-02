@@ -1,14 +1,15 @@
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class Program
+public class Visualization
 {
     private Boolean running;
     private Display display;
     private final CodeSim codeSim;
+    private final DetailsPanel detailsPanel;
     private KeyManager keyManager;
     private MouseManager mouseManager;
     private int width, height;
@@ -20,9 +21,10 @@ public class Program
     ArrayList<int[]> edges;
     ArrayList<Integer> selectedPoints;
 
-    public Program(CodeSim codeSim)
+    public Visualization(CodeSim codeSim, DetailsPanel detailsPanel)
     {
         this.codeSim = codeSim;
+        this.detailsPanel = detailsPanel;
         points = new ArrayList<>();
         edges = new ArrayList<>();
         selectedPoints = new ArrayList<>();
@@ -60,10 +62,30 @@ public class Program
                 {
                     if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
                        mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3 && // checks which point is pressed
-                       !selectedPoints.contains(i) && // prevents cycle
-                       (selectedPoints.size() == 0 || (!(edges.contains(new int[]{selectedPoints.get(0), i}) || edges.contains(new int[]{i, selectedPoints.get(0)})))))  // prevents duplication of edge
+                       !selectedPoints.contains(i))  // prevents cycle
                     {
-                        selectedPoints.add(i);
+                        boolean flag = true;
+
+                        // prevents edge duplication
+                        if(selectedPoints.size() > 0)
+                        {
+                            for(int[] edge : edges)
+                            {
+                                int source = edge[0];
+                                int destination = edge[1];
+
+                                if((source == selectedPoints.get(0) && destination == i) || (source == i && destination == selectedPoints.get(0)))
+                                {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if(flag)
+                        {
+                            selectedPoints.add(i);
+                        }
                     }
                 }
                 if(selectedPoints.size() == 2)
@@ -71,7 +93,9 @@ public class Program
                     Point source = points.get(selectedPoints.get(0));
                     Point destination = points.get(selectedPoints.get(1));
                     int distance = (int) Math.sqrt((source.x - destination.x) * (source.x - destination.x) + (source.y - destination.y) * (source.y - destination.y));
-                    edges.add(new int[]{selectedPoints.get(0), selectedPoints.get(1), distance});
+                    int[] edge = new int[]{selectedPoints.get(0), selectedPoints.get(1), distance};
+                    edges.add(edge);
+                    detailsPanel.addEdgeLabel(edge);
                     selectedPoints = new ArrayList<>();
                 }
             }
@@ -102,6 +126,7 @@ public class Program
             points = new ArrayList<>();
             edges = new ArrayList<>();
             selectedPoints = new ArrayList<>();
+            detailsPanel.resetPanel();
         }
 
         keyManager.update();
@@ -119,12 +144,13 @@ public class Program
 
         Graphics graphics = bufferStrategy.getDrawGraphics();
         graphics.clearRect(0, 0, width, height);
-        graphics.setFont(new Font("Consolas", Font.PLAIN, 10));
+        graphics.setFont(new Font("Consolas", Font.PLAIN, 12));
+        graphics.setColor(Color.WHITE);
 
         // START DRAW
         if(inputtingPoints)
         {
-            graphics.setColor(Color.BLACK);
+            graphics.setColor(Color.WHITE);
             for(Point point : points)
             {
                 graphics.drawRect(point.x - 3, point.y - 3, 6, 6);
@@ -134,7 +160,7 @@ public class Program
         {
             for(int i = 0 ; i < points.size(); i++)
             {
-                graphics.setColor(selectedPoints.contains(i) ? Color.RED : Color.BLACK);
+                graphics.setColor(selectedPoints.contains(i) ? Color.RED : Color.WHITE);
                 graphics.fillRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
             }
 
@@ -156,10 +182,18 @@ public class Program
             }
         }
 
-        graphics.setColor(Color.BLACK);
         for(int[] edge : edges)
         {
-            graphics.drawLine(points.get(edge[0]).x, points.get(edge[0]).y, points.get(edge[1]).x, points.get(edge[1]).y);
+            graphics.setColor(Color.WHITE);
+            Point source = points.get(edge[0]);
+            Point destination = points.get(edge[1]);
+            graphics.drawLine(source.x, source.y, destination.x, destination.y);
+
+            Point mid = new Point(Math.abs(points.get(edge[0]).x - points.get(edge[1]).x) / 2, Math.abs(points.get(edge[0]).y - points.get(edge[1]).y) / 2);
+            Point leftPoint = source.x < destination.x ? source : destination;
+            Point topPoint = source.y < destination.y ? source : destination;
+            graphics.setColor(Color.BLUE);
+            graphics.drawString(String.valueOf(edge[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
         }
 
         // END DRAW
