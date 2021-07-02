@@ -1,6 +1,8 @@
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Program
 {
@@ -11,14 +13,19 @@ public class Program
     private MouseManager mouseManager;
     private int width, height;
 
-    private boolean confirmed;
+    private boolean inputtingPoints, inputtingEdge;
 
+    Dijkstra dijkstra;
     ArrayList<Point> points;
+    ArrayList<int[]> edges;
+    ArrayList<Integer> selectedPoints;
 
     public Program(CodeSim codeSim)
     {
         this.codeSim = codeSim;
         points = new ArrayList<>();
+        edges = new ArrayList<>();
+        selectedPoints = new ArrayList<>();
         running = false;
     }
 
@@ -33,24 +40,68 @@ public class Program
         display.getFrame().addKeyListener(keyManager);
         display.getCanvas().addMouseMotionListener(mouseManager);
         display.getCanvas().addMouseListener(mouseManager);
+
+        inputtingPoints = true;
+        inputtingEdge = false;
     }
 
     private void update()
     {
 
-        if(!confirmed && mouseManager.isLeftPressed())
+        if(mouseManager.isLeftPressed())
         {
-            points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
+            if(inputtingPoints)
+            {
+                points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
+            }
+            else if(inputtingEdge)
+            {
+                for(int i = 0; i < points.size(); i++)
+                {
+                    if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
+                       mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3 && // checks which point is pressed
+                       !selectedPoints.contains(i) && // prevents cycle
+                       (selectedPoints.size() == 0 || (!(edges.contains(new int[]{selectedPoints.get(0), i}) || edges.contains(new int[]{i, selectedPoints.get(0)})))))  // prevents duplication of edge
+                    {
+                        selectedPoints.add(i);
+                    }
+                }
+                if(selectedPoints.size() == 2)
+                {
+                    Point source = points.get(selectedPoints.get(0));
+                    Point destination = points.get(selectedPoints.get(1));
+                    int distance = (int) Math.sqrt((source.x - destination.x) * (source.x - destination.x) + (source.y - destination.y) * (source.y - destination.y));
+                    edges.add(new int[]{selectedPoints.get(0), selectedPoints.get(1), distance});
+                    selectedPoints = new ArrayList<>();
+                }
+            }
         }
 
-        if(keyManager.enter)
+        if(keyManager.keyUp(KeyEvent.VK_ENTER))
         {
-            confirmed = true;
+            if(inputtingPoints)
+            {
+                inputtingPoints = false;
+                inputtingEdge = true;
+                dijkstra = new Dijkstra(points.size());
+            }
+            else if(inputtingEdge)
+            {
+                inputtingEdge = false;
+                for(int[] edge : edges)
+                {
+                    dijkstra.addEdge(edge[0], edge[1], edge[2]);
+                }
+                //System.out.println(Arrays.deepToString(dijkstra.shortestPath(0)));
+            }
         }
-        if(keyManager.r)
+        if(keyManager.keyUp(KeyEvent.VK_R))
         {
-            confirmed = false;
+            inputtingPoints = true;
+            inputtingEdge = false;
             points = new ArrayList<>();
+            edges = new ArrayList<>();
+            selectedPoints = new ArrayList<>();
         }
 
         keyManager.update();
@@ -71,11 +122,44 @@ public class Program
         graphics.setFont(new Font("Consolas", Font.PLAIN, 10));
 
         // START DRAW
-
-        graphics.setColor(confirmed ? Color.GREEN : Color.BLACK);
-        for(Point point : points)
+        if(inputtingPoints)
         {
-            graphics.drawOval(point.x - 2, point.y -2, 4, 4);
+            graphics.setColor(Color.BLACK);
+            for(Point point : points)
+            {
+                graphics.drawRect(point.x - 3, point.y - 3, 6, 6);
+            }
+        }
+        else if(inputtingEdge)
+        {
+            for(int i = 0 ; i < points.size(); i++)
+            {
+                graphics.setColor(selectedPoints.contains(i) ? Color.RED : Color.BLACK);
+                graphics.fillRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
+            }
+
+            if(selectedPoints.size() > 0)
+            {
+                graphics.setColor(Color.RED);
+                for(int i : selectedPoints)
+                {
+                    graphics.drawLine(points.get(i).x, points.get(i).y, mouseManager.getMouseX(), mouseManager.getMouseY());
+                }
+            }
+        }
+        else
+        {
+            graphics.setColor(Color.GREEN);
+            for(Point point : points)
+            {
+                graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
+            }
+        }
+
+        graphics.setColor(Color.BLACK);
+        for(int[] edge : edges)
+        {
+            graphics.drawLine(points.get(edge[0]).x, points.get(edge[0]).y, points.get(edge[1]).x, points.get(edge[1]).y);
         }
 
         // END DRAW
