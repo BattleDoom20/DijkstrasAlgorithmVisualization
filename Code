@@ -1,0 +1,46 @@
+public int[][] shortestPath(int source)
+{
+    LinkedList<Integer> visited = new LinkedList<>();
+    int[][] values = new int[adj.size()][2];
+    for(int i = 0; i < values.length; i++)
+    {
+        if(i == source)
+        {
+            values[i][0] = 0;
+            values[i][1] = source;
+            continue;
+        }
+        values[i][0] = Integer.MAX_VALUE;
+    }
+
+    int current = source;
+    while(visited.size() != adj.size())
+    {
+        for(Edge edge : adj.get(current))
+        {
+            if(!visited.contains(edge.destination))
+            {
+                int cost = edge.distance + values[current][0];
+                if(cost < values[edge.destination][0])
+                {
+                    values[edge.destination][0] = cost;
+                    values[edge.destination][1] = current;
+                }
+            }
+        }
+        visited.add(current);
+
+        int lowestIndex = 0;
+        int lowestDistance = Integer.MAX_VALUE;
+        for(Edge edge : adj.get(current))
+        {
+            if(!visited.contains(edge.destination) && edge.distance < lowestDistance)
+            {
+                lowestIndex = edge.destination;
+                lowestDistance = edge.distance;
+            }
+        }
+        current = lowestIndex;
+    }
+    return values;
+}
