@@ -11,7 +11,7 @@ public class Display
     public Display()
     {
         // FRAME START
-        frame = new JFrame("Closest Pair Visualization");
+        frame = new JFrame("Dijkstra's Algorithm Visualization");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
 
