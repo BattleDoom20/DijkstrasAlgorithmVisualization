@@ -12,7 +12,7 @@ public class MouseManager implements MouseListener, MouseMotionListener {
 
     }
 
-    public void tick()
+    public void update()
     {
         leftPressed = false;
     }

@@ -4,7 +4,7 @@ import java.awt.event.KeyListener;
 public class KeyManager implements KeyListener
 {
 
-    private boolean[] keys;
+    private final boolean[] keys;
     public boolean enter;
 
     public KeyManager()
@@ -12,7 +12,7 @@ public class KeyManager implements KeyListener
         keys = new boolean[256];
     }
 
-    public void tick()
+    public void update()
     {
         enter = keys[KeyEvent.VK_ENTER];
     }

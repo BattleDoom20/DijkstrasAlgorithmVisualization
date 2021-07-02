@@ -19,6 +19,6 @@ public class Main
         codeSimFrame.setVisible(true);
 
         Program program = new Program(codeSimPanel);
-        program.start();
+        program.run();
     }
 }

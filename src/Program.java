@@ -1,11 +1,12 @@
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 
-public class Program implements Runnable
+public class Program
 {
     private Boolean running;
     private Display display;
-    private Thread thread;
+    private KeyManager keyManager;
+    private MouseManager mouseManager;
     private int width, height;
 
     private final CodeSim codeSim;
@@ -15,20 +16,31 @@ public class Program implements Runnable
         this.codeSim = codeSim;
         running = false;
         display = null;
-        thread = null;
+        keyManager = null;
+        mouseManager = null;
         width = 0;
         height = 0;
     }
 
     private void init()
     {
+        keyManager = new KeyManager();
+        mouseManager = new MouseManager();
+
         display = new Display();
         width = display.getFrame().getWidth();
         height = display.getFrame().getHeight();
+        display.getFrame().addKeyListener(keyManager);
+        display.getFrame().addMouseListener(mouseManager);
+        display.getFrame().addMouseMotionListener(mouseManager);
+        display.getCanvas().addMouseMotionListener(mouseManager);
+        display.getCanvas().addMouseListener(mouseManager);
     }
 
     private void update()
     {
+        keyManager.update();
+        mouseManager.update();
     }
 
     private void render()
@@ -46,7 +58,7 @@ public class Program implements Runnable
 
         // START DRAW
 
-
+        graphics.drawOval(mouseManager.getMouseX() - 3, mouseManager.getMouseY() - 3, 6, 6);
 
         // END DRAW
 
@@ -54,7 +66,6 @@ public class Program implements Runnable
         graphics.dispose();
     }
 
-    @Override
     public void run()
     {
         init();
@@ -66,6 +77,7 @@ public class Program implements Runnable
         long now;
         long lastTime = System.nanoTime();
         long timer = 0;
+        running = true;
         while(running)
         {
             now = System.nanoTime();
@@ -82,33 +94,6 @@ public class Program implements Runnable
             {
                 timer = 0;
             }
-        }
-    }
-
-    public synchronized void start()
-    {
-        if(running)
-        {
-            return;
-        }
-        running = true;
-        thread = new Thread(this);
-        thread.start();
-    }
-
-    public synchronized void stop()
-    {
-        if(!running)
-        {
-            return;
-        }
-        try
-        {
-            thread.join();
-        }
-        catch(InterruptedException e)
-        {
-            e.printStackTrace();
         }
     }
 }
