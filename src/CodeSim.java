@@ -62,7 +62,7 @@ public class CodeSim extends JPanel
 
     private CodeSim()
     {
-        font = new Font("Consolas", Font.PLAIN, 13);
+        font = new Font("Consolas", Font.PLAIN, 11);
         lineNumberBackground = Color.black;
         lineNumberForeground = Color.gray;
         background = Color.white;
@@ -127,7 +127,7 @@ public class CodeSim extends JPanel
             {
                 JPanel number = new JPanel(new FlowLayout((FlowLayout.RIGHT)));
                 number.setBackground(lineNumberBackground);
-                number.setPreferredSize(new Dimension(20, 25));
+                number.setPreferredSize(new Dimension(20, 16));
                 JLabel numberLabel = new JLabel(String.valueOf(i + 1));
                 numberLabel.setForeground(lineNumberForeground);
                 numberLabel.setFont(font);
@@ -136,7 +136,7 @@ public class CodeSim extends JPanel
 
                 JPanel linePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 linePanel.setBackground(background);
-                linePanel.setPreferredSize(new Dimension(0, 25));
+                linePanel.setPreferredSize(new Dimension(0, 16));
                 JLabel lineLabel = page.get(i);
                 lineLabel.setForeground(foreground);
                 lineLabel.setFont(font);
