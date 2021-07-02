@@ -39,10 +39,6 @@ public class MouseManager implements MouseListener, MouseMotionListener {
     @Override
     public void mousePressed(MouseEvent e)
     {
-        if(e.getButton() == MouseEvent.BUTTON1)
-        {
-            leftPressed = true;
-        }
 
     }
 
