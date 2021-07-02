@@ -17,7 +17,7 @@ public class Display
 
         // Canvas
         canvas = new Canvas();
-        canvas.setBackground(new Color(175, 175, 175));
+        canvas.setBackground(new Color(50, 50, 50));
         canvas.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMaximumSize(new Dimension(WIDTH, HEIGHT));
         canvas.setMinimumSize(new Dimension(WIDTH, HEIGHT));
