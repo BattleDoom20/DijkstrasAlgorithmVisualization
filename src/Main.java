@@ -5,20 +5,24 @@ public class Main
 {
     public static void main(String[] args)
     {
-        JFrame codeSimFrame = new JFrame("Code Simulation");
-        codeSimFrame.setSize(new Dimension(700, 700));
-        codeSimFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        codeSimFrame.setResizable(false);
-        codeSimFrame.setLocationRelativeTo(null);
+        JFrame statusFrame = new JFrame("Code Simulation");
+        statusFrame.setSize(new Dimension(600, 530));
+        statusFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        statusFrame.setResizable(false);
+        statusFrame.setLocationRelativeTo(null);
+
         CodeSim codeSimPanel = new CodeSim("code");
         codeSimPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         codeSimPanel.setForeground(Color.WHITE);
         codeSimPanel.setBackground(new Color(40, 40, 40));
         codeSimPanel.init();
-        codeSimFrame.add(codeSimPanel);
-        codeSimFrame.setVisible(true);
 
-        Program program = new Program(codeSimPanel);
-        program.run();
+        DetailsPanel detailsPanel = new DetailsPanel(statusFrame);
+
+        statusFrame.add(codeSimPanel);
+        statusFrame.setVisible(true);
+
+        Visualization visualization = new Visualization(codeSimPanel, detailsPanel);
+        visualization.run();
     }
 }
