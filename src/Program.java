@@ -1,25 +1,25 @@
 import java.awt.*;
 import java.awt.image.BufferStrategy;
+import java.util.ArrayList;
 
 public class Program
 {
     private Boolean running;
     private Display display;
+    private final CodeSim codeSim;
     private KeyManager keyManager;
     private MouseManager mouseManager;
     private int width, height;
 
-    private final CodeSim codeSim;
+    private boolean confirmed;
+
+    ArrayList<Point> points;
 
     public Program(CodeSim codeSim)
     {
         this.codeSim = codeSim;
+        points = new ArrayList<>();
         running = false;
-        display = null;
-        keyManager = null;
-        mouseManager = null;
-        width = 0;
-        height = 0;
     }
 
     private void init()
@@ -31,14 +31,28 @@ public class Program
         width = display.getFrame().getWidth();
         height = display.getFrame().getHeight();
         display.getFrame().addKeyListener(keyManager);
-        display.getFrame().addMouseListener(mouseManager);
-        display.getFrame().addMouseMotionListener(mouseManager);
         display.getCanvas().addMouseMotionListener(mouseManager);
         display.getCanvas().addMouseListener(mouseManager);
     }
 
     private void update()
     {
+
+        if(!confirmed && mouseManager.isLeftPressed())
+        {
+            points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
+        }
+
+        if(keyManager.enter)
+        {
+            confirmed = true;
+        }
+        if(keyManager.r)
+        {
+            confirmed = false;
+            points = new ArrayList<>();
+        }
+
         keyManager.update();
         mouseManager.update();
     }
@@ -58,7 +72,11 @@ public class Program
 
         // START DRAW
 
-        graphics.drawOval(mouseManager.getMouseX() - 3, mouseManager.getMouseY() - 3, 6, 6);
+        graphics.setColor(confirmed ? Color.GREEN : Color.BLACK);
+        for(Point point : points)
+        {
+            graphics.drawOval(point.x - 2, point.y -2, 4, 4);
+        }
 
         // END DRAW
 
