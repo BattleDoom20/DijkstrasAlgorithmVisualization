@@ -5,7 +5,6 @@ public class KeyManager implements KeyListener
 {
 
     private final boolean[] keys;
-    public boolean enter, r;
 
     public KeyManager()
     {
@@ -14,8 +13,13 @@ public class KeyManager implements KeyListener
 
     public void update()
     {
-        enter = keys[KeyEvent.VK_ENTER];
-        r = keys[KeyEvent.VK_R];
+        keys[KeyEvent.VK_ENTER] = false;
+        keys[KeyEvent.VK_R] = false;
+    }
+
+    public boolean keyUp(int key)
+    {
+        return keys[key];
     }
 
     @Override
@@ -26,12 +30,11 @@ public class KeyManager implements KeyListener
     @Override
     public void keyPressed(KeyEvent e)
     {
-        keys[e.getKeyCode()] = true;
     }
 
     @Override
     public void keyReleased(KeyEvent e)
     {
-        keys[e.getKeyCode()] = false;
+        keys[e.getKeyCode()] = true;
     }
 }
