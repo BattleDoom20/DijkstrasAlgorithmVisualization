@@ -1,6 +1,22 @@
 import java.util.*;
 
-public class Dijkstra
+class StepData
+{
+    public final int[][] valuesTable;
+    public final int[] visitedNodes;
+    public final int currentNode;
+    public final int lowestNode;
+
+    public StepData(int[][] valuesTable, int[] visitedNodes, int currentNode, int lowestNode)
+    {
+        this.valuesTable = valuesTable;
+        this.visitedNodes = visitedNodes;
+        this.currentNode = currentNode;
+        this.lowestNode = lowestNode;
+    }
+}
+
+public class Dijkstra // A graph ADT that computes the shortest path using Dijkstra's Algorithm
 {
     LinkedList<LinkedList<Edge>> adj;
 
@@ -26,8 +42,9 @@ public class Dijkstra
         adj.get(destination).add(edge);
     }
 
-    public int[][] shortestPath(int source)
+    public ArrayList<StepData> shortestPath(int source)
     {
+        ArrayList<StepData> steps = new ArrayList<>();
         LinkedList<Integer> visited = new LinkedList<>();
         int[][] values = new int[adj.size()][2]; // this will contain the vertex with its cost to reach starting from the source and the vertex that is reached before it. Rows = vertices, columns = cost and previous vertex.
         for(int i = 0; i < values.length; i++)
@@ -67,9 +84,10 @@ public class Dijkstra
                     lowestDistance = edge.distance;
                 }
             }
+            steps.add(new StepData(values.clone(), Arrays.stream(visited.toArray()).mapToInt(i -> (int) i).toArray(), current, lowestIndex));
             current = lowestIndex;
         }
-        return values;
+        return steps;
     }
 }
 
