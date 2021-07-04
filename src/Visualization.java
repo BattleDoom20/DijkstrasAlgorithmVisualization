@@ -81,11 +81,11 @@ public class Visualization
                                 }
                             }
                         }
-
                         if(flag)
                         {
                             selectedPoints.add(i);
                         }
+                        break;
                     }
                 }
                 if(selectedPoints.size() == 2)
@@ -95,7 +95,7 @@ public class Visualization
                     int distance = (int) Math.sqrt((source.x - destination.x) * (source.x - destination.x) + (source.y - destination.y) * (source.y - destination.y));
                     int[] edge = new int[]{selectedPoints.get(0), selectedPoints.get(1), distance};
                     edges.add(edge);
-                    detailsPanel.addEdgeLabel(edge);
+                    detailsPanel.updateList(edges);
                     selectedPoints = new ArrayList<>();
                 }
             }
@@ -133,7 +133,7 @@ public class Visualization
             points = new ArrayList<>();
             edges = new ArrayList<>();
             selectedPoints = new ArrayList<>();
-            detailsPanel.resetPanel();
+            detailsPanel.updateList(edges);
         }
 
         keyManager.update();
