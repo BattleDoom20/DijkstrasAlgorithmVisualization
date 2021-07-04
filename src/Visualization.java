@@ -132,13 +132,14 @@ public class Visualization
         }
         else if(keyManager.keyUp(KeyEvent.VK_R))
         {
-            inputtingPoints = true;
-            inputtingEdge = false;
-            points = new ArrayList<>();
-            edges = new ArrayList<>();
-            selectedPoints = new ArrayList<>();
-            detailsPanel.updateList(edges);
-            showInstructions = true;
+            if(inputtingPoints || inputtingEdge)
+            {
+                reset();
+            }
+            else
+            {
+                // TODO restart simulation
+            }
         }
         else if(keyManager.keyUp(KeyEvent.VK_Z))
         {
@@ -159,6 +160,13 @@ public class Visualization
                     inputtingPoints = true;
                     points.remove(points.size() - 1);
                 }
+            }
+        }
+        else if(keyManager.keyUp(KeyEvent.VK_ESCAPE))
+        {
+            if(!(inputtingPoints || inputtingEdge))
+            {
+                reset();
             }
         }
 
@@ -268,6 +276,17 @@ public class Visualization
 
         bufferStrategy.show();
         graphics.dispose();
+    }
+
+    private void reset()
+    {
+        inputtingPoints = true;
+        inputtingEdge = false;
+        points = new ArrayList<>();
+        edges = new ArrayList<>();
+        selectedPoints = new ArrayList<>();
+        detailsPanel.updateList(edges);
+        showInstructions = true;
     }
 
     public void run()
