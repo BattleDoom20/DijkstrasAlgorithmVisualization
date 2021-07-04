@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Visualization
 {
@@ -126,7 +127,6 @@ public class Visualization
                 {
                     dijkstra.addEdge(edge[0], edge[1], edge[2]);
                 }
-                //System.out.println(Arrays.deepToString(dijkstra.shortestPath(0)));
             }
             showInstructions = true;
         }
