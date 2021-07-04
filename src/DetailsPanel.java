@@ -26,7 +26,7 @@ public class DetailsPanel
         char source = (char) (65 + edge[0]);
         char destination = (char) (65 + edge[1]);
 
-        JLabel label = new JLabel(source + " --> " + destination + " : " + edge[2]);
+        JLabel label = new JLabel(source + " <--> " + destination + " : " + edge[2]);
         label.setForeground(Color.WHITE);
         label.setFont(font);
         panel.add(label);
