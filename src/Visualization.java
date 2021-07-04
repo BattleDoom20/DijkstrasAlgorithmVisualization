@@ -100,6 +100,13 @@ public class Visualization
                 }
             }
         }
+        else if(mouseManager.isRightPressed())
+        {
+            if(selectedPoints.size() > 0)
+            {
+                selectedPoints = new ArrayList<>();
+            }
+        }
 
         if(keyManager.keyUp(KeyEvent.VK_ENTER))
         {
@@ -119,7 +126,7 @@ public class Visualization
                 //System.out.println(Arrays.deepToString(dijkstra.shortestPath(0)));
             }
         }
-        if(keyManager.keyUp(KeyEvent.VK_R))
+        else if(keyManager.keyUp(KeyEvent.VK_R))
         {
             inputtingPoints = true;
             inputtingEdge = false;
@@ -180,6 +187,12 @@ public class Visualization
             {
                 graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
             }
+        }
+
+        graphics.setColor(Color.RED);
+        for(int i = 0; i < points.size(); i++)
+        {
+            graphics.drawString(String.valueOf((char) (65 + i)), points.get(i).x - 3, points.get(i).y - 4);
         }
 
         for(int[] edge : edges)
