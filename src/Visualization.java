@@ -1,4 +1,3 @@
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
@@ -14,12 +13,13 @@ public class Visualization
     private MouseManager mouseManager;
     private int width, height;
 
+    private boolean showInstructions;
     private boolean inputtingPoints, inputtingEdge;
 
-    Dijkstra dijkstra;
-    ArrayList<Point> points;
-    ArrayList<int[]> edges;
-    ArrayList<Integer> selectedPoints;
+    private Dijkstra dijkstra;
+    private ArrayList<Point> points;
+    private ArrayList<int[]> edges;
+    private ArrayList<Integer> selectedPoints;
 
     public Visualization(CodeSim codeSim, DetailsPanel detailsPanel)
     {
@@ -45,11 +45,12 @@ public class Visualization
 
         inputtingPoints = true;
         inputtingEdge = false;
+
+        showInstructions = true;
     }
 
     private void update()
     {
-
         if(mouseManager.isLeftPressed())
         {
             if(inputtingPoints)
@@ -99,6 +100,7 @@ public class Visualization
                     selectedPoints = new ArrayList<>();
                 }
             }
+            showInstructions = false;
         }
         else if(mouseManager.isRightPressed())
         {
@@ -106,6 +108,7 @@ public class Visualization
             {
                 selectedPoints = new ArrayList<>();
             }
+            showInstructions = false;
         }
 
         if(keyManager.keyUp(KeyEvent.VK_ENTER))
@@ -125,6 +128,7 @@ public class Visualization
                 }
                 //System.out.println(Arrays.deepToString(dijkstra.shortestPath(0)));
             }
+            showInstructions = true;
         }
         else if(keyManager.keyUp(KeyEvent.VK_R))
         {
@@ -134,6 +138,28 @@ public class Visualization
             edges = new ArrayList<>();
             selectedPoints = new ArrayList<>();
             detailsPanel.updateList(edges);
+            showInstructions = true;
+        }
+        else if(keyManager.keyUp(KeyEvent.VK_Z))
+        {
+            if(!points.isEmpty() && inputtingPoints)
+            {
+                points.remove(points.size() - 1);
+            }
+            if(inputtingEdge)
+            {
+                if(!edges.isEmpty())
+                {
+                    edges.remove(edges.size() - 1);
+                    detailsPanel.updateList(edges);
+                }
+                else
+                {
+                    inputtingEdge = false;
+                    inputtingPoints = true;
+                    points.remove(points.size() - 1);
+                }
+            }
         }
 
         keyManager.update();
@@ -207,6 +233,35 @@ public class Visualization
             Point topPoint = source.y < destination.y ? source : destination;
             graphics.setColor(Color.BLUE);
             graphics.drawString(String.valueOf(edge[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
+        }
+
+        // draw instructions
+        if(showInstructions)
+        {
+            graphics.setColor(Color.MAGENTA);
+            if(inputtingPoints)
+            {
+                graphics.drawString("Mouse1 to add a node/point.", 0, height - 65);
+                graphics.drawString("Z to undo.", 0, height - 55);
+                graphics.drawString("R to reset.", 0, height - 45);
+                graphics.drawString("Enter to proceed to adding edges.", 0, height - 35);
+            }
+            else if(inputtingEdge)
+            {
+                graphics.drawString("Mouse 1 to select a point/node.", 0, height - 75);
+                graphics.drawString("Mouse 2 to cancel selection.", 0, height - 65);
+                graphics.drawString("Z to undo.", 0, height - 55);
+                graphics.drawString("R to reset.", 0, height - 45);
+                graphics.drawString("Enter to confirm.", 0, height - 35);
+            }
+            else
+            {
+                graphics.drawString("Right Arrow to step forward.", 0, height - 75);
+                graphics.drawString("Left Arrow to step back.", 0, height - 65);
+                graphics.drawString("SPACE to play/pause.", 0, height - 55);
+                graphics.drawString("R to restart.", 0, height - 45);
+                graphics.drawString("ESC to reset.", 0, height - 35);
+            }
         }
 
         // END DRAW

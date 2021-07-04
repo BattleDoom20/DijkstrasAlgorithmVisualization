@@ -1,5 +1,6 @@
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Arrays;
 
 public class KeyManager implements KeyListener
 {
@@ -13,8 +14,7 @@ public class KeyManager implements KeyListener
 
     public void update()
     {
-        keys[KeyEvent.VK_ENTER] = false;
-        keys[KeyEvent.VK_R] = false;
+        Arrays.fill(keys, false);
     }
 
     public boolean keyUp(int key)
