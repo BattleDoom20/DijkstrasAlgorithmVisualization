@@ -73,7 +73,7 @@ public class DetailsPanel implements MouseListener
         {
             if(e.getSource() == entries.get(i))
             {
-                new EdgePrompt(this, edges.get(i));
+                new EdgePrompt(frame,this, edges.get(i));
             }
         }
     }

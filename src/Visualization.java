@@ -14,19 +14,32 @@ public class Visualization
     private MouseManager mouseManager;
     private int width, height;
 
-    private boolean showInstructions;
+    private boolean showInstructions, playSimulation;
     private boolean inputtingPoints, inputtingEdge;
+
+    private int sourceNode;
+    private int simulationTimer;
+    private int linePointer;
+    private int stepPointer;
+    private int[][] lines;
+    private boolean linePointerChanged;
+    private int numRepeatWhileLoop;
+    private int numRepeatForLoop;
+    private int currentNeighbor;
 
     private Dijkstra dijkstra;
     private ArrayList<Point> points;
+    private ArrayList<Color> pointColors;
     private ArrayList<int[]> edges;
     private ArrayList<Integer> selectedPoints;
+    private ArrayList<StepData> steps;
 
     public Visualization(CodeSim codeSim, DetailsPanel detailsPanel)
     {
         this.codeSim = codeSim;
         this.detailsPanel = detailsPanel;
         points = new ArrayList<>();
+        pointColors = new ArrayList<>();
         edges = new ArrayList<>();
         selectedPoints = new ArrayList<>();
         running = false;
@@ -44,132 +57,207 @@ public class Visualization
         display.getCanvas().addMouseMotionListener(mouseManager);
         display.getCanvas().addMouseListener(mouseManager);
 
-        inputtingPoints = true;
-        inputtingEdge = false;
+        lines = new int[][]
+                {
+                        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, // 0-initialize table
+                        {13},                                   // 1-initialize current node
+                        {14},                                   // 2-while loop
+                        {16},                                   // 3-for loop
+                        {18},                                   // 4-if statement
+                        {20},                                   // 5-compute cost
+                        {21},                                   // 6-check if lowest (if statement)
+                        {23},                                   // 7-set distance
+                        {24},                                   // 8-set previous
+                        {28},                                   // 5-add current to visited
+                        {29}                                    // 6-make current to the next node
+                };
 
-        showInstructions = true;
+        reset();
     }
 
     private void update()
     {
-        if(mouseManager.isLeftPressed())
+        if(!playSimulation)
         {
-            if(inputtingPoints)
+            if(mouseManager.isLeftPressed())
             {
-                points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
-            }
-            else if(inputtingEdge)
-            {
-                for(int i = 0; i < points.size(); i++)
+                if(inputtingPoints)
                 {
-                    if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
-                       mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3 && // checks which point is pressed
-                       !selectedPoints.contains(i))  // prevents cycle
+                    points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
+                    pointColors.add(Color.WHITE);
+                }
+                else if(inputtingEdge)
+                {
+                    for(int i = 0; i < points.size(); i++)
                     {
-                        boolean flag = true;
-
-                        // prevents edge duplication
-                        if(selectedPoints.size() > 0)
+                        if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
+                           mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3 && // checks which point is pressed
+                           !selectedPoints.contains(i))  // prevents cycle
                         {
-                            for(int[] edge : edges)
-                            {
-                                int source = edge[0];
-                                int destination = edge[1];
+                            boolean flag = true;
 
-                                if((source == selectedPoints.get(0) && destination == i) || (source == i && destination == selectedPoints.get(0)))
+                            // prevents edge duplication
+                            if(selectedPoints.size() > 0)
+                            {
+                                for(int[] edge : edges)
                                 {
-                                    flag = false;
-                                    break;
+                                    int source = edge[0];
+                                    int destination = edge[1];
+
+                                    if((source == selectedPoints.get(0) && destination == i) || (source == i && destination == selectedPoints.get(0)))
+                                    {
+                                        flag = false;
+                                        break;
+                                    }
                                 }
                             }
+                            if(flag)
+                            {
+                                selectedPoints.add(i);
+                                pointColors.set(i, Color.RED);
+                            }
+                            break;
                         }
-                        if(flag)
-                        {
-                            selectedPoints.add(i);
-                        }
-                        break;
+                    }
+                    if(selectedPoints.size() == 2)
+                    {
+                        Point source = points.get(selectedPoints.get(0));
+                        Point destination = points.get(selectedPoints.get(1));
+                        int distance = (int) Math.sqrt((source.x - destination.x) * (source.x - destination.x) + (source.y - destination.y) * (source.y - destination.y));
+                        int[] edge = new int[]{selectedPoints.get(0), selectedPoints.get(1), distance};
+                        new EdgePrompt(display.getFrame(), detailsPanel, edge);
+                        edges.add(edge);
+                        detailsPanel.updateList(edges);
+                        selectedPoints = new ArrayList<>();
                     }
                 }
-                if(selectedPoints.size() == 2)
+                else if(!playSimulation) // selects starting node
                 {
-                    Point source = points.get(selectedPoints.get(0));
-                    Point destination = points.get(selectedPoints.get(1));
-                    int distance = (int) Math.sqrt((source.x - destination.x) * (source.x - destination.x) + (source.y - destination.y) * (source.y - destination.y));
-                    int[] edge = new int[]{selectedPoints.get(0), selectedPoints.get(1), distance};
-                    edges.add(edge);
-                    detailsPanel.updateList(edges);
+                    for(int i = 0; i < points.size(); i++)
+                    {
+                        if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
+                           mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3)
+                        {
+                            for(int j = 0; j < pointColors.size(); j++)
+                            {
+                                pointColors.set(j, Color.WHITE);
+                            }
+                            sourceNode = i;
+                            pointColors.set(sourceNode, Color.RED);
+                            break;
+                        }
+                    }
+                }
+                showInstructions = false;
+            }
+            else if(mouseManager.isRightPressed())
+            {
+                if(selectedPoints.size() > 0)
+                {
                     selectedPoints = new ArrayList<>();
                 }
+                showInstructions = false;
             }
-            showInstructions = false;
-        }
-        else if(mouseManager.isRightPressed())
-        {
-            if(selectedPoints.size() > 0)
-            {
-                selectedPoints = new ArrayList<>();
-            }
-            showInstructions = false;
-        }
 
-        if(keyManager.keyUp(KeyEvent.VK_ENTER))
-        {
-            if(inputtingPoints)
+            if(keyManager.keyUp(KeyEvent.VK_ENTER))
             {
-                inputtingPoints = false;
-                inputtingEdge = true;
-                dijkstra = new Dijkstra(points.size());
-            }
-            else if(inputtingEdge)
-            {
-                inputtingEdge = false;
-                for(int[] edge : edges)
+                if(inputtingPoints)
                 {
-                    dijkstra.addEdge(edge[0], edge[1], edge[2]);
+                    if(points.size() >= 2)
+                    {
+                        inputtingPoints = false;
+                        inputtingEdge = true;
+                        dijkstra = new Dijkstra(points.size());
+                    }
                 }
-            }
-            showInstructions = true;
-        }
-        else if(keyManager.keyUp(KeyEvent.VK_R))
-        {
-            if(inputtingPoints || inputtingEdge)
-            {
-                reset();
-            }
-            else
-            {
-                // TODO restart simulation
-            }
-        }
-        else if(keyManager.keyUp(KeyEvent.VK_Z))
-        {
-            if(!points.isEmpty() && inputtingPoints)
-            {
-                points.remove(points.size() - 1);
-            }
-            if(inputtingEdge)
-            {
-                if(!edges.isEmpty())
+                else if(inputtingEdge)
                 {
-                    edges.remove(edges.size() - 1);
-                    detailsPanel.updateList(edges);
+                    inputtingEdge = false;
+                    for(int[] edge : edges)
+                    {
+                        dijkstra.addEdge(edge[0], edge[1], edge[2]);
+                    }
+                    linePointer++;
+                    linePointerChanged = true;
                 }
                 else
                 {
-                    inputtingEdge = false;
-                    inputtingPoints = true;
+                    if(linePointer == 0)
+                    {
+                        initSim();
+                    }
+                    stepForward();
+                }
+                showInstructions = true;
+            }
+            else if(keyManager.keyUp(KeyEvent.VK_R))
+            {
+                if(inputtingPoints || inputtingEdge)
+                {
+                    reset();
+                }
+                else
+                {
+                    initSim();
+                }
+            }
+            else if(keyManager.keyUp(KeyEvent.VK_Z))
+            {
+                if(!points.isEmpty() && inputtingPoints)
+                {
                     points.remove(points.size() - 1);
+                    pointColors.remove(pointColors.size() - 1);
+                }
+                if(inputtingEdge)
+                {
+                    if(!edges.isEmpty())
+                    {
+                        edges.remove(edges.size() - 1);
+                        detailsPanel.updateList(edges);
+                    }
+                    else
+                    {
+                        inputtingEdge = false;
+                        inputtingPoints = true;
+                        points.remove(points.size() - 1);
+                        pointColors.remove(pointColors.size() - 1);
+                    }
+                }
+            }
+            else if(keyManager.keyUp(KeyEvent.VK_ESCAPE))
+            {
+                if(!(inputtingPoints || inputtingEdge))
+                {
+                    reset();
                 }
             }
         }
-        else if(keyManager.keyUp(KeyEvent.VK_ESCAPE))
+        if(keyManager.keyUp(KeyEvent.VK_SPACE))
         {
             if(!(inputtingPoints || inputtingEdge))
             {
-                reset();
+                if(!playSimulation)
+                {
+                    initSim();
+                    playSimulation = true;
+                    showInstructions = false;
+                }
+                else
+                {
+                    playSimulation = false;
+                }
             }
         }
 
+        if(simulationTimer > 10)
+        {
+            if(playSimulation)
+            {
+                stepForward();
+            }
+            simulationTimer = 0;
+        }
+        simulationTimer++;
         keyManager.update();
         mouseManager.update();
     }
@@ -189,19 +277,20 @@ public class Visualization
         graphics.setColor(Color.WHITE);
 
         // START DRAW
+
+        // draw points
         if(inputtingPoints)
         {
-            graphics.setColor(Color.WHITE);
-            for(Point point : points)
+            for(int i = 0; i < points.size(); i++)
             {
-                graphics.drawRect(point.x - 3, point.y - 3, 6, 6);
+                graphics.setColor(pointColors.get(i));
+                graphics.drawRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
             }
         }
         else if(inputtingEdge)
         {
             for(int i = 0 ; i < points.size(); i++)
             {
-                graphics.setColor(selectedPoints.contains(i) ? Color.RED : Color.WHITE);
                 graphics.fillRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
             }
 
@@ -216,31 +305,33 @@ public class Visualization
         }
         else
         {
-            graphics.setColor(Color.GREEN);
-            for(Point point : points)
+            for(int i = 0; i < points.size(); i++)
             {
-                graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
+                graphics.setColor(pointColors.get(i));
+                graphics.fillRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
             }
         }
 
+        // draw node names
         graphics.setColor(Color.RED);
         for(int i = 0; i < points.size(); i++)
         {
             graphics.drawString(String.valueOf((char) (65 + i)), points.get(i).x - 3, points.get(i).y - 4);
         }
 
-        for(int[] edge : edges)
+        // draw edges
+        for(int i = 0; i < edges.size(); i++)
         {
             graphics.setColor(Color.WHITE);
-            Point source = points.get(edge[0]);
-            Point destination = points.get(edge[1]);
+            Point source = points.get(edges.get(i)[0]);
+            Point destination = points.get(edges.get(i)[1]);
             graphics.drawLine(source.x, source.y, destination.x, destination.y);
 
-            Point mid = new Point(Math.abs(points.get(edge[0]).x - points.get(edge[1]).x) / 2, Math.abs(points.get(edge[0]).y - points.get(edge[1]).y) / 2);
+            Point mid = new Point(Math.abs(points.get(edges.get(i)[0]).x - points.get(edges.get(i)[1]).x) / 2, Math.abs(points.get(edges.get(i)[0]).y - points.get(edges.get(i)[1]).y) / 2);
             Point leftPoint = source.x < destination.x ? source : destination;
             Point topPoint = source.y < destination.y ? source : destination;
             graphics.setColor(Color.BLUE);
-            graphics.drawString(String.valueOf(edge[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
+            graphics.drawString(String.valueOf(edges.get(i)[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
         }
 
         // draw instructions
@@ -264,11 +355,23 @@ public class Visualization
             }
             else
             {
-                graphics.drawString("Right Arrow to step forward.", 0, height - 75);
-                graphics.drawString("Left Arrow to step back.", 0, height - 65);
+                graphics.drawString("ENTER to step forward.", 0, height - 65);
                 graphics.drawString("SPACE to play/pause.", 0, height - 55);
-                graphics.drawString("R to restart.", 0, height - 45);
+                graphics.drawString("R to restart simulation.", 0, height - 45);
                 graphics.drawString("ESC to reset.", 0, height - 35);
+            }
+        }
+
+        if(!(inputtingPoints || inputtingEdge))
+        {
+            if(simulationTimer == 10)
+            {
+                if(linePointerChanged)
+                {
+                    codeSim.resetLines();
+                    codeSim.setLine(lines[linePointer]);
+                    linePointerChanged = false;
+                }
             }
         }
 
@@ -278,44 +381,125 @@ public class Visualization
         graphics.dispose();
     }
 
+    private void initSim()
+    {
+        for(int i = 0; i < pointColors.size(); i++)
+        {
+            if(i != sourceNode)
+            {
+                pointColors.set(i, Color.WHITE);
+            }
+        }
+        steps = dijkstra.shortestPath(0);
+        pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
+        numRepeatWhileLoop = steps.get(0).valuesTable.length;
+        numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
+        simulationTimer = 0;
+        linePointer = 0;
+        linePointerChanged = true;
+        stepPointer = 0;
+    }
+
+    private void stepForward()
+    {
+        for(int i = 0; i < pointColors.size(); i++)
+        {
+            if(!(i == sourceNode || i == steps.get(stepPointer).currentNode))
+            {
+                pointColors.set(i, Color.WHITE);
+            }
+        }
+        if(linePointer < lines.length - 1)
+        {
+            linePointer++;
+            linePointerChanged = true;
+
+            if(linePointer == 4)
+            {
+                currentNeighbor = steps.get(stepPointer).neighborCount.length - numRepeatForLoop;
+            }
+
+            // directs the linePointer
+            if(numRepeatWhileLoop > 0)
+            {
+                if(numRepeatForLoop > 0)
+                {
+                    if(linePointer == 5)
+                    {
+                        if(!steps.get(stepPointer).neighborCount[steps.get(stepPointer).neighborCount.length - numRepeatForLoop])
+                        {
+                            linePointer = 3;
+                            numRepeatForLoop--;
+                        }
+                    }
+                    if(linePointer == 9)
+                    {
+                        if(--numRepeatForLoop != 0)
+                        {
+                            linePointer = 3;
+                        }
+                    }
+                }
+                if(numRepeatForLoop == 0)
+                {
+                    numRepeatWhileLoop--;
+                    if(numRepeatWhileLoop != 0)
+                    {
+                        linePointer = 2;
+                        pointColors.set(steps.get(stepPointer).currentNode, Color.WHITE);
+                        stepPointer++;
+                        pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
+                        numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
+                    }
+                    if(numRepeatWhileLoop == 0)
+                    {
+                        linePointer = 9;
+                    }
+                }
+            }
+        }
+    }
+
     private void reset()
     {
+        codeSim.resetLines();
         inputtingPoints = true;
         inputtingEdge = false;
+        showInstructions = true;
+        playSimulation = false;
+        simulationTimer = 0;
+        linePointer = -1;
+        linePointerChanged = true;
+        stepPointer = 0;
         points = new ArrayList<>();
         edges = new ArrayList<>();
         selectedPoints = new ArrayList<>();
         detailsPanel.updateList(edges);
         showInstructions = true;
+
     }
 
     public void run()
     {
         init();
 
-        // this block of code set's up the rendering timing so that it is consistent
-        int fps = 30; // the simulation will run at 5 frames per second
+        // this block of code set's up the timing so that it is consistent
+        int fps = 120;
         double timePerTick = 1000000000 / (double) fps;
         double delta = 0;
         long now;
         long lastTime = System.nanoTime();
-        long timer = 0;
         running = true;
         while(running)
         {
             now = System.nanoTime();
             delta += (now - lastTime) / timePerTick;
-            timer += now - lastTime;
             lastTime = now;
             if(delta >= 1)
             {
                 update();
                 render();
                 delta--;
-            }
-            if(timer >= 1000000000)
-            {
-                timer = 0;
             }
         }
     }

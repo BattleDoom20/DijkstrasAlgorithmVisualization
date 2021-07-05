@@ -4,17 +4,21 @@ import java.util.Arrays;
 
 public class KeyManager implements KeyListener
 {
-
+    public boolean disable;
     private final boolean[] keys;
 
     public KeyManager()
     {
+        disable = false;
         keys = new boolean[256];
     }
 
     public void update()
     {
-        Arrays.fill(keys, false);
+        if(!disable)
+        {
+            Arrays.fill(keys, false);
+        }
     }
 
     public boolean keyUp(int key)
@@ -35,6 +39,13 @@ public class KeyManager implements KeyListener
     @Override
     public void keyReleased(KeyEvent e)
     {
-        keys[e.getKeyCode()] = true;
+        try
+        {
+            keys[e.getKeyCode()] = true;
+        }
+        catch(ArrayIndexOutOfBoundsException ex)
+        {
+            System.err.println("Unknown key was pressed.");
+        }
     }
 }

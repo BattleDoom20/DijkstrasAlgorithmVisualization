@@ -27,5 +27,5 @@ while(visited.size() != adj.size())
         }
     }
     visited.add(current);
-    current = lowestDistance(adj.get(current));
+    current = lowestDistance(adj.get(current), values);
 }
