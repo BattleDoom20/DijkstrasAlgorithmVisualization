@@ -7,14 +7,16 @@ class StepData
     public final int currentNode;
     public final int lowestNode;
     public final boolean[] neighborCount;
+    public int[] neighbors;
 
-    public StepData(int[][] valuesTable, int[] visitedNodes, int currentNode, int lowestNode, boolean[] neighborCount)
+    public StepData(int[][] valuesTable, int[] visitedNodes, int currentNode, int lowestNode, boolean[] neighborCount, int[] neighbors)
     {
         this.valuesTable = valuesTable;
         this.visitedNodes = visitedNodes;
         this.currentNode = currentNode;
         this.lowestNode = lowestNode;
         this.neighborCount = neighborCount;
+        this.neighbors = neighbors;
     }
 }
 
@@ -58,13 +60,14 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
                 continue;
             }
             values[i][0] = Integer.MAX_VALUE;
+            values[i][1] = i;
         }
 
         int current = source;
         while(visited.size() != adj.size())
         {
-            boolean[] neighbors = new boolean[adj.get(current).size()];
-            // visit all unvisited neighbors of the current node
+            boolean[] showNeighbors = new boolean[adj.get(current).size()];
+            // visit all unvisited showNeighbors of the current node
             LinkedList<Edge> edges = adj.get(current);
             for(int i = 0; i < edges.size(); i++)
             {
@@ -76,11 +79,11 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
                         values[edges.get(i).destination][0] = cost;
                         values[edges.get(i).destination][1] = current;
                     }
-                    neighbors[i] = true;
+                    showNeighbors[i] = true;
                 }
                 else
                 {
-                    neighbors[i] = false;
+                    showNeighbors[i] = false;
                 }
             }
             visited.add(current);
@@ -101,7 +104,14 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
             {
                 stepValue[i] = values[i].clone();
             }
-            steps.add(new StepData(stepValue, Arrays.stream(visited.toArray()).mapToInt(i -> (int) i).toArray(), current, lowestIndex, neighbors));
+
+            // create array of neighbors for step data
+            int[] neighbors = new int[edges.size()];
+            for(int i = 0; i < neighbors.length; i++)
+            {
+                neighbors[i] = edges.get(i).destination;
+            }
+            steps.add(new StepData(stepValue, Arrays.stream(visited.toArray()).mapToInt(i -> (int) i).toArray(), current, lowestIndex, showNeighbors, neighbors));
             current = lowestIndex;
         }
         return steps;

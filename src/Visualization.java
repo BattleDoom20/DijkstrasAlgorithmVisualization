@@ -14,7 +14,7 @@ public class Visualization
     private MouseManager mouseManager;
     private int width, height;
 
-    private boolean showInstructions, playSimulation;
+    private boolean showInstructions, playSimulation, endSimulation;
     private boolean inputtingPoints, inputtingEdge;
 
     private int sourceNode;
@@ -26,6 +26,7 @@ public class Visualization
     private int numRepeatWhileLoop;
     private int numRepeatForLoop;
     private int currentNeighbor;
+    private int[] currentShortestNeighbor;
 
     private Dijkstra dijkstra;
     private ArrayList<Point> points;
@@ -68,8 +69,8 @@ public class Visualization
                         {21},                                   // 6-check if lowest (if statement)
                         {23},                                   // 7-set distance
                         {24},                                   // 8-set previous
-                        {28},                                   // 5-add current to visited
-                        {29}                                    // 6-make current to the next node
+                        {28},                                   // 9-add current to visited
+                        {29}                                    // 10-make current to the next node
                 };
 
         reset();
@@ -114,7 +115,6 @@ public class Visualization
                             if(flag)
                             {
                                 selectedPoints.add(i);
-                                pointColors.set(i, Color.RED);
                             }
                             break;
                         }
@@ -143,7 +143,7 @@ public class Visualization
                                 pointColors.set(j, Color.WHITE);
                             }
                             sourceNode = i;
-                            pointColors.set(sourceNode, Color.RED);
+                            pointColors.set(sourceNode, Color.BLUE);
                             break;
                         }
                     }
@@ -185,6 +185,7 @@ public class Visualization
                     if(linePointer == 0)
                     {
                         initSim();
+                        pointColors.set(sourceNode, Color.BLUE);
                     }
                     stepForward();
                 }
@@ -248,6 +249,10 @@ public class Visualization
                 }
             }
         }
+        if(endSimulation)
+        {
+            playSimulation = false;
+        }
 
         if(simulationTimer > 10)
         {
@@ -289,9 +294,9 @@ public class Visualization
         }
         else if(inputtingEdge)
         {
-            for(int i = 0 ; i < points.size(); i++)
+            for(Point point : points)
             {
-                graphics.fillRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
+                graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
             }
 
             if(selectedPoints.size() > 0)
@@ -320,18 +325,58 @@ public class Visualization
         }
 
         // draw edges
-        for(int i = 0; i < edges.size(); i++)
+        for(int[] edge : edges)
         {
             graphics.setColor(Color.WHITE);
-            Point source = points.get(edges.get(i)[0]);
-            Point destination = points.get(edges.get(i)[1]);
+            Point source = points.get(edge[0]);
+            Point destination = points.get(edge[1]);
             graphics.drawLine(source.x, source.y, destination.x, destination.y);
 
-            Point mid = new Point(Math.abs(points.get(edges.get(i)[0]).x - points.get(edges.get(i)[1]).x) / 2, Math.abs(points.get(edges.get(i)[0]).y - points.get(edges.get(i)[1]).y) / 2);
+            Point mid = new Point(Math.abs(points.get(edge[0]).x - points.get(edge[1]).x) / 2, Math.abs(points.get(edge[0]).y - points.get(edge[1]).y) / 2);
             Point leftPoint = source.x < destination.x ? source : destination;
             Point topPoint = source.y < destination.y ? source : destination;
             graphics.setColor(Color.BLUE);
-            graphics.drawString(String.valueOf(edges.get(i)[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
+            graphics.drawString(String.valueOf(edge[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
+        }
+
+        if(steps != null)
+        {
+            Point source;
+            Point destination;
+
+            // draw the current shortest path from start to each node
+            graphics.setColor(Color.RED);
+            for(int i = 0; i < points.size(); i++)
+            {
+                int node = i;
+                while(node != sourceNode)
+                {
+                    int nextNode = currentShortestNeighbor[node];
+                    if(node == nextNode)
+                    {
+                        break;
+                    }
+                    source = points.get(node);
+                    destination = points.get(nextNode);
+                    node = nextNode;
+                    graphics.drawLine(source.x, source.y, destination.x, destination.y);
+                }
+            }
+
+            // draw the current visiting edge
+            if(!endSimulation)
+            {
+                graphics.setColor(Color.MAGENTA);
+                for(int i = 0; i < points.size(); i++)
+                {
+                    if(i == currentNeighbor)
+                    {
+                        source = points.get(steps.get(stepPointer).currentNode);
+                        destination = points.get(currentNeighbor);
+                        graphics.drawLine(source.x, source.y, destination.x, destination.y);
+                    }
+                }
+            }
         }
 
         // draw instructions
@@ -383,14 +428,8 @@ public class Visualization
 
     private void initSim()
     {
-        for(int i = 0; i < pointColors.size(); i++)
-        {
-            if(i != sourceNode)
-            {
-                pointColors.set(i, Color.WHITE);
-            }
-        }
-        steps = dijkstra.shortestPath(0);
+        showInstructions = true;
+        steps = dijkstra.shortestPath(sourceNode);
         pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
         numRepeatWhileLoop = steps.get(0).valuesTable.length;
         numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
@@ -398,26 +437,36 @@ public class Visualization
         linePointer = 0;
         linePointerChanged = true;
         stepPointer = 0;
+        currentNeighbor = sourceNode;
+        currentShortestNeighbor = new int[points.size()];
+        for(int i = 0; i < pointColors.size(); i++)
+        {
+            pointColors.set(i, i == sourceNode ? Color.BLUE : Color.WHITE);
+        }
+        for(int i = 0; i < currentShortestNeighbor.length; i++)
+        {
+            currentShortestNeighbor[i] = i;
+        }
+        endSimulation = false;
     }
 
     private void stepForward()
     {
         for(int i = 0; i < pointColors.size(); i++)
         {
-            if(!(i == sourceNode || i == steps.get(stepPointer).currentNode))
-            {
-                pointColors.set(i, Color.WHITE);
-            }
+            pointColors.set(i, Color.WHITE);
         }
+        for(int i : steps.get(stepPointer).visitedNodes)
+        {
+            pointColors.set(i, Color.RED);
+        }
+        pointColors.set(sourceNode, Color.BLUE);
+        pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
+
         if(linePointer < lines.length - 1)
         {
             linePointer++;
             linePointerChanged = true;
-
-            if(linePointer == 4)
-            {
-                currentNeighbor = steps.get(stepPointer).neighborCount.length - numRepeatForLoop;
-            }
 
             // directs the linePointer
             if(numRepeatWhileLoop > 0)
@@ -438,6 +487,7 @@ public class Visualization
                         {
                             linePointer = 3;
                         }
+                        currentShortestNeighbor[currentNeighbor] = steps.get(stepPointer).valuesTable[currentNeighbor][1];
                     }
                 }
                 if(numRepeatForLoop == 0)
@@ -446,10 +496,9 @@ public class Visualization
                     if(numRepeatWhileLoop != 0)
                     {
                         linePointer = 2;
-                        pointColors.set(steps.get(stepPointer).currentNode, Color.WHITE);
                         stepPointer++;
-                        pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
                         numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
+                        currentNeighbor = steps.get(stepPointer).currentNode;
                     }
                     if(numRepeatWhileLoop == 0)
                     {
@@ -457,6 +506,17 @@ public class Visualization
                     }
                 }
             }
+            if(linePointer == 4)
+            {
+                currentNeighbor = steps.get(stepPointer).neighbors[steps.get(stepPointer).neighborCount.length - numRepeatForLoop];
+            }
+        }
+        else
+        {
+            showInstructions = true;
+            endSimulation = true;
+            pointColors.set(steps.get(stepPointer).currentNode, Color.RED);
+            codeSim.resetLines();
         }
     }
 
@@ -469,14 +529,18 @@ public class Visualization
         playSimulation = false;
         simulationTimer = 0;
         linePointer = -1;
-        linePointerChanged = true;
         stepPointer = 0;
         points = new ArrayList<>();
+        pointColors = new ArrayList<>();
         edges = new ArrayList<>();
         selectedPoints = new ArrayList<>();
         detailsPanel.updateList(edges);
         showInstructions = true;
-
+        sourceNode = 0;
+        currentNeighbor = 0;
+        currentShortestNeighbor = null;
+        steps = null;
+        dijkstra = null;
     }
 
     public void run()
@@ -484,7 +548,7 @@ public class Visualization
         init();
 
         // this block of code set's up the timing so that it is consistent
-        int fps = 120;
+        int fps = 60;
         double timePerTick = 1000000000 / (double) fps;
         double delta = 0;
         long now;

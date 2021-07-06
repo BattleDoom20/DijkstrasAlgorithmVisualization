@@ -1,6 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 
+/*
+TODO
+    1. Draw the current visiting edge #####
+    2. Draw the current shortest paths from start to each nodes #####
+    3. Draw phase indicator on bottom right
+    4. Draw playing/pause indicator on top left
+ */
+
 public class Main
 {
     public static void main(String[] args)
