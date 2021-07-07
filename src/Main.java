@@ -3,10 +3,8 @@ import java.awt.*;
 
 /*
 TODO
-    1. Draw the current visiting edge #####
-    2. Draw the current shortest paths from start to each nodes #####
-    3. Draw phase indicator on bottom right
-    4. Draw playing/pause indicator on top left
+    1. Draw phase indicator on bottom right
+    2. Draw playing/pause indicator on top left
  */
 
 public class Main

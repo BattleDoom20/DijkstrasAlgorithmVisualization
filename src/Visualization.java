@@ -2,7 +2,6 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Visualization
 {
@@ -27,6 +26,7 @@ public class Visualization
     private int numRepeatForLoop;
     private int currentNeighbor;
     private int[] currentShortestNeighbor;
+    boolean drawCurEdge, drawCurNode;
 
     private Dijkstra dijkstra;
     private ArrayList<Point> points;
@@ -364,7 +364,7 @@ public class Visualization
             }
 
             // draw the current visiting edge
-            if(!endSimulation)
+            if(!endSimulation && drawCurEdge)
             {
                 graphics.setColor(Color.MAGENTA);
                 for(int i = 0; i < points.size(); i++)
@@ -428,11 +428,13 @@ public class Visualization
 
     private void initSim()
     {
+        drawCurEdge = true;
+        drawCurNode = true;
         showInstructions = true;
         steps = dijkstra.shortestPath(sourceNode);
         pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
         numRepeatWhileLoop = steps.get(0).valuesTable.length;
-        numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
+        numRepeatForLoop = steps.get(stepPointer).neighborsToVisit.length;
         simulationTimer = 0;
         linePointer = 0;
         linePointerChanged = true;
@@ -452,6 +454,74 @@ public class Visualization
 
     private void stepForward()
     {
+        drawCurEdge = true;
+        drawCurNode = true;
+        if(linePointer < lines.length)
+        {
+            // directs the linePointer
+            if(numRepeatWhileLoop > 0)
+            {
+                linePointer++;
+                linePointerChanged = true;
+                if(numRepeatForLoop > 0)
+                {
+                    if((linePointer == 5 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]) ||
+                       (linePointer == 7 && !steps.get(stepPointer).smallerNeighbors[steps.get(stepPointer).smallerNeighbors.length - numRepeatForLoop]))
+                    {
+                        linePointer = 3;
+                        numRepeatForLoop--;
+                    }
+                    if(linePointer == 9)
+                    {
+                        numRepeatForLoop--;
+                        linePointer = 3;
+                        drawCurEdge = false;
+                        currentShortestNeighbor[currentNeighbor] = steps.get(stepPointer).valuesTable[currentNeighbor][1];
+                    }
+                }
+                else if(numRepeatForLoop == 0)
+                {
+                    if(linePointer == 4 || linePointer == 10)
+                    {
+                        drawCurEdge = false;
+                        if(linePointer == 4)
+                        {
+                            linePointer = 9;
+                        }
+                    }
+                    else if(linePointer == 11)
+                    {
+                        linePointer = 2;
+                        if(--numRepeatWhileLoop != 0)
+                        {
+                            stepPointer++;
+                            numRepeatForLoop = steps.get(stepPointer).neighborsToVisit.length;
+                        }
+                        else
+                        {
+                            drawCurNode = false;
+                        }
+                        drawCurEdge = false;
+                    }
+                }
+            }
+            else
+            {
+                if(linePointer == 2)
+                {
+                    linePointer = 0;
+                    showInstructions = true;
+                    endSimulation = true;
+                    pointColors.set(steps.get(stepPointer).currentNode, Color.RED);
+                    codeSim.resetLines();
+                }
+            }
+            if(linePointer == 4 && numRepeatForLoop != 0)
+            {
+                currentNeighbor = steps.get(stepPointer).neighbors[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop];
+            }
+        }
+
         for(int i = 0; i < pointColors.size(); i++)
         {
             pointColors.set(i, Color.WHITE);
@@ -461,67 +531,16 @@ public class Visualization
             pointColors.set(i, Color.RED);
         }
         pointColors.set(sourceNode, Color.BLUE);
-        pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
-
-        if(linePointer < lines.length - 1)
+        if(linePointer > 1 && drawCurNode)
         {
-            linePointer++;
-            linePointerChanged = true;
-
-            // directs the linePointer
-            if(numRepeatWhileLoop > 0)
-            {
-                if(numRepeatForLoop > 0)
-                {
-                    if(linePointer == 5)
-                    {
-                        if(!steps.get(stepPointer).neighborCount[steps.get(stepPointer).neighborCount.length - numRepeatForLoop])
-                        {
-                            linePointer = 3;
-                            numRepeatForLoop--;
-                        }
-                    }
-                    if(linePointer == 9)
-                    {
-                        if(--numRepeatForLoop != 0)
-                        {
-                            linePointer = 3;
-                        }
-                        currentShortestNeighbor[currentNeighbor] = steps.get(stepPointer).valuesTable[currentNeighbor][1];
-                    }
-                }
-                if(numRepeatForLoop == 0)
-                {
-                    numRepeatWhileLoop--;
-                    if(numRepeatWhileLoop != 0)
-                    {
-                        linePointer = 2;
-                        stepPointer++;
-                        numRepeatForLoop = steps.get(stepPointer).neighborCount.length;
-                        currentNeighbor = steps.get(stepPointer).currentNode;
-                    }
-                    if(numRepeatWhileLoop == 0)
-                    {
-                        linePointer = 9;
-                    }
-                }
-            }
-            if(linePointer == 4)
-            {
-                currentNeighbor = steps.get(stepPointer).neighbors[steps.get(stepPointer).neighborCount.length - numRepeatForLoop];
-            }
-        }
-        else
-        {
-            showInstructions = true;
-            endSimulation = true;
-            pointColors.set(steps.get(stepPointer).currentNode, Color.RED);
-            codeSim.resetLines();
+            pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
         }
     }
 
     private void reset()
     {
+        drawCurEdge = true;
+        drawCurNode = true;
         codeSim.resetLines();
         inputtingPoints = true;
         inputtingEdge = false;
