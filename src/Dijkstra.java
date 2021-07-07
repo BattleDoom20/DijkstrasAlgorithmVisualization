@@ -70,10 +70,12 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
         {
             boolean[] neighborsToVisit = new boolean[adj.get(current).size()];
             boolean[] smallerNeighbors = new boolean[adj.get(current).size()];
+            int[] neighbors = new int[adj.size()];
             // visit all unvisited neighborsToVisit of the current node
             LinkedList<Edge> edges = adj.get(current);
             for(int i = 0; i < edges.size(); i++)
             {
+                neighbors[i] = edges.get(i).destination;
                 int cost = edges.get(i).distance + values[current][0]; // add the cost to reach the destination and the cost to reach the current vertex
                 if(!visited.contains(edges.get(i).destination))
                 {
@@ -114,11 +116,6 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
             }
 
             // create array of neighbors for step data
-            int[] neighbors = new int[edges.size()];
-            for(int i = 0; i < neighbors.length; i++)
-            {
-                neighbors[i] = edges.get(i).destination;
-            }
             steps.add(new StepData(stepValue, Arrays.stream(visited.toArray()).mapToInt(i -> (int) i).toArray(), current, lowestIndex, neighborsToVisit, smallerNeighbors, neighbors));
             current = lowestIndex;
         }

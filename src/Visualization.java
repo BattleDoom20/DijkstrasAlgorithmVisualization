@@ -182,12 +182,22 @@ public class Visualization
                 }
                 else
                 {
-                    if(linePointer == 0)
+                    if(!playSimulation)
                     {
-                        initSim();
-                        pointColors.set(sourceNode, Color.BLUE);
+                        if(!endSimulation)
+                        {
+                            if(linePointer == 0)
+                            {
+                                initSim();
+                                pointColors.set(sourceNode, Color.BLUE);
+                            }
+                            stepForward();
+                        }
+                        else
+                        {
+                            initSim();
+                        }
                     }
-                    stepForward();
                 }
                 showInstructions = true;
             }
@@ -249,16 +259,16 @@ public class Visualization
                 }
             }
         }
-        if(endSimulation)
-        {
-            playSimulation = false;
-        }
 
         if(simulationTimer > 10)
         {
             if(playSimulation)
             {
                 stepForward();
+            }
+            if(endSimulation)
+            {
+                playSimulation = false;
             }
             simulationTimer = 0;
         }
@@ -465,6 +475,10 @@ public class Visualization
                 linePointerChanged = true;
                 if(numRepeatForLoop > 0)
                 {
+                    if(linePointer == 3)
+                    {
+                        drawCurEdge = false;
+                    }
                     if((linePointer == 5 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]) ||
                        (linePointer == 7 && !steps.get(stepPointer).smallerNeighbors[steps.get(stepPointer).smallerNeighbors.length - numRepeatForLoop]))
                     {
@@ -473,8 +487,8 @@ public class Visualization
                     }
                     if(linePointer == 9)
                     {
-                        numRepeatForLoop--;
                         linePointer = 3;
+                        numRepeatForLoop--;
                         drawCurEdge = false;
                         currentShortestNeighbor[currentNeighbor] = steps.get(stepPointer).valuesTable[currentNeighbor][1];
                     }
@@ -492,6 +506,7 @@ public class Visualization
                     else if(linePointer == 11)
                     {
                         linePointer = 2;
+                        drawCurEdge = false;
                         if(--numRepeatWhileLoop != 0)
                         {
                             stepPointer++;
@@ -501,7 +516,6 @@ public class Visualization
                         {
                             drawCurNode = false;
                         }
-                        drawCurEdge = false;
                     }
                 }
             }
