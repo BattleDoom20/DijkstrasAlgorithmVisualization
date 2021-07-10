@@ -1,3 +1,8 @@
+/*
+Filename: DetailsPanel.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -32,6 +37,7 @@ public class DetailsPanel implements MouseListener
     {
         panel.removeAll();
 
+        // Create header for the edges lsit
         JLabel headerLabel = new JLabel("Edge List");
         headerLabel.setPreferredSize(new Dimension(125, 16));
         headerLabel.setForeground(Color.WHITE);
@@ -39,7 +45,6 @@ public class DetailsPanel implements MouseListener
         panel.add(headerLabel);
 
         entries = new ArrayList<>();
-
         if(edges != null)
         {
             for(int[] edge : edges)

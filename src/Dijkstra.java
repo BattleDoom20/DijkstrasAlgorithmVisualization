@@ -1,6 +1,11 @@
+/*
+Filename: Dijkstra.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import java.util.*;
 
-class StepData
+class StepData // A class that will be used to get the states and values of data at a certain iteration of the algorithm
 {
     public final int[][] valuesTable;
     public final int[] visitedNodes;
@@ -69,9 +74,9 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
         while(!unvisited.isEmpty())
         {
             unvisited.remove(new Integer(current));
-            boolean[] neighborsToVisit = new boolean[adj.get(current).size()];
-            boolean[] smallerNeighbors = new boolean[adj.get(current).size()];
-            int[] neighbors = new int[adj.size()];
+            boolean[] neighborsToVisit = new boolean[adj.get(current).size()]; // Indicator for StepData. Shows which edge was checked.
+            boolean[] smallerNeighbors = new boolean[adj.get(current).size()]; // Indicator for StepData. Shows which neighbor was smaller than the current value.
+            int[] neighbors = new int[adj.size()]; // Indicator for StepData. Lists all edges of the current node.
             Arrays.fill(neighbors, -1);
             // visit all unvisited neighborsToVisit of the current node
             LinkedList<Edge> edges = adj.get(current);
@@ -111,7 +116,7 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
                     lowestDistance = values[edge.destination][0];
                 }
             }
-            if(lowestIndex == -1 && !unvisited.isEmpty())
+            if(lowestIndex == -1 && !unvisited.isEmpty()) // if no edge left that can be used as next node, we get an unvisited node instead
             {
                 lowestIndex = unvisited.get(0);
             }
@@ -121,7 +126,6 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
             {
                 stepValue[i] = values[i].clone();
             }
-
 
             steps.add(new StepData(stepValue, Arrays.stream(visited.toArray()).mapToInt(i -> (int) i).toArray(), current, neighborsToVisit, smallerNeighbors, neighbors));
             current = lowestIndex;

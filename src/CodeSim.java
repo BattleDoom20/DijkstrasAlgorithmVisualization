@@ -1,3 +1,11 @@
+/*
+Filename: CodeSim.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+
+This code is a framework created by the group. To be used in various machine problems.
+Link to github repository: https://github.com/PaulEspina/JavaGUICodeSimFramework
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;

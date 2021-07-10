@@ -1,3 +1,8 @@
+/*
+Filename: Visualization.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
@@ -10,8 +15,8 @@ public class Visualization
     private Display display;
     private final CodeSim codeSim;
     private final DetailsPanel detailsPanel;
-    private KeyManager keyManager;
-    private MouseManager mouseManager;
+    private final KeyManager keyManager;
+    private final MouseManager mouseManager;
     private int width, height;
 
     private boolean playSimulation, endSimulation;
@@ -21,13 +26,25 @@ public class Visualization
     private int simulationTimer;
     private int linePointer;
     private int stepPointer;
-    private int[][] lines;
     private boolean linePointerChanged;
     private int numRepeatWhileLoop;
     private int numRepeatForLoop;
     private int currentNeighbor;
     private int[] currentShortestNeighbor;
     boolean drawCurEdge, drawCurNode;
+    private final int[][]
+            lines = new int[][]
+            {
+                    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13}, // 0-initialize table
+                    {15},                                           // 1-initialize current node
+                    {16},                                           // 2-while loop
+                    {18},                                           // 3-remove the current from unvisited
+                    {19},                                           // 4-for loop
+                    {21},                                           // 5-if statement
+                    {23, 24, 25, 26, 27},                           // 6-check if lowest (if statement)
+                    {30},                                           // 7-add current to visited
+                    {31, 32, 33, 34, 35}                            // 8-choose next node
+            };
 
     private Dijkstra dijkstra;
     private ArrayList<Point> points;
@@ -51,25 +68,15 @@ public class Visualization
 
     private void init()
     {
+        // Create display
         display = new Display();
         width = display.getFrame().getWidth();
         height = display.getFrame().getHeight();
+
+        // Add event listeners to the frame and canvas
         display.getFrame().addKeyListener(keyManager);
         display.getCanvas().addMouseMotionListener(mouseManager);
         display.getCanvas().addMouseListener(mouseManager);
-
-        lines = new int[][]
-                {
-                        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13}, // 0-initialize table
-                        {15},                                           // 1-initialize current node
-                        {16},                                           // 2-while loop
-                        {18},                                           // 3-remove the current from unvisited
-                        {19},                                           // 4-for loop
-                        {21},                                           // 5-if statement
-                        {23, 24, 25, 26, 27},                           // 6-check if lowest (if statement)
-                        {30},                                           // 7-add current to visited
-                        {31, 32, 33, 34, 35}                            // 8-choose next node
-                };
 
         reset();
     }
@@ -82,6 +89,7 @@ public class Visualization
             {
                 if(inputtingPoints)
                 {
+                    // Add point
                     points.add(new Point(mouseManager.getMouseX(), mouseManager.getMouseY()));
                     pointColors.add(Color.WHITE);
                 }
@@ -110,13 +118,15 @@ public class Visualization
                                     }
                                 }
                             }
-                            if(flag)
+                            if(flag) // select point
                             {
                                 selectedPoints.add(i);
                             }
                             break;
                         }
                     }
+
+                    // Add edge
                     if(selectedPoints.size() == 2)
                     {
                         Point source = points.get(selectedPoints.get(0));
@@ -147,7 +157,7 @@ public class Visualization
                     }
                 }
             }
-            else if(mouseManager.isRightPressed())
+            else if(mouseManager.isRightPressed()) // cancel selection
             {
                 if(selectedPoints.size() > 0)
                 {
@@ -157,7 +167,7 @@ public class Visualization
 
             if(keyManager.keyUp(KeyEvent.VK_ENTER))
             {
-                if(inputtingPoints)
+                if(inputtingPoints) // proceed to enter edge
                 {
                     if(points.size() >= 2)
                     {
@@ -166,7 +176,7 @@ public class Visualization
                         dijkstra = new Dijkstra(points.size());
                     }
                 }
-                else if(inputtingEdge)
+                else if(inputtingEdge) // confirm input
                 {
                     inputtingEdge = false;
                     for(int[] edge : edges)
@@ -180,7 +190,7 @@ public class Visualization
                 }
                 else
                 {
-                    if(!playSimulation)
+                    if(!playSimulation) // start or step forward simulation
                     {
                         if(!endSimulation)
                         {
@@ -209,7 +219,7 @@ public class Visualization
                     initSim();
                 }
             }
-            else if(keyManager.keyUp(KeyEvent.VK_Z))
+            else if(keyManager.keyUp(KeyEvent.VK_Z)) // undo
             {
                 if(!points.isEmpty() && inputtingPoints)
                 {
@@ -238,7 +248,7 @@ public class Visualization
                 }
             }
         }
-        if(keyManager.keyUp(KeyEvent.VK_SPACE))
+        if(keyManager.keyUp(KeyEvent.VK_SPACE)) // play simulation
         {
             if(!(inputtingPoints || inputtingEdge))
             {
@@ -258,7 +268,7 @@ public class Visualization
             }
         }
 
-        if(simulationTimer > 10)
+        if(simulationTimer > 10) // simulation timing loop
         {
             if(playSimulation)
             {
@@ -439,7 +449,7 @@ public class Visualization
             }
         }
 
-        if(!(inputtingPoints || inputtingEdge))
+        if(!(inputtingPoints || inputtingEdge)) // synchonizes rendering to simulation timing
         {
             if(simulationTimer == 10)
             {
@@ -458,7 +468,7 @@ public class Visualization
         graphics.dispose();
     }
 
-    private void initSim()
+    private void initSim() // resets all data to start the simulation again
     {
         drawCurEdge = true;
         drawCurNode = true;
@@ -492,9 +502,11 @@ public class Visualization
     {
         drawCurEdge = true;
         drawCurNode = true;
+
+        // directs the linePointer
+        // god knows what happens here
         if(linePointer < lines.length)
         {
-            // directs the linePointer
             if(numRepeatWhileLoop > 0)
             {
                 linePointer++;
@@ -567,7 +579,7 @@ public class Visualization
         }
     }
 
-    private void reset()
+    private void reset() // resets everything including inputted points and edges
     {
         drawCurEdge = true;
         drawCurNode = true;

@@ -1,3 +1,8 @@
+/*
+Filename: EdgePrompt.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,6 +18,7 @@ public class EdgePrompt extends JFrame implements ActionListener
 
     public EdgePrompt(JFrame parent, DetailsPanel detailsPanel, int[] edge)
     {
+        // Frame Setup
         this.parent = parent;
         this.parent.setEnabled(false);
         this.detailsPanel = detailsPanel;
@@ -23,6 +29,7 @@ public class EdgePrompt extends JFrame implements ActionListener
         setResizable(false);
         setLocationRelativeTo(parent);
 
+        // Center Panel
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         JLabel info = new JLabel("Path between nodes " + (char) (65 + edge[0]) + " and " + (char) (65 + edge[1]));
@@ -36,10 +43,21 @@ public class EdgePrompt extends JFrame implements ActionListener
         centerPanel.add(info);
         centerPanel.add(distance);
 
+        // South Panel
         JPanel southPanel = new JPanel();
-        closeButton = new Button("CLOSE");
+        closeButton = new JButton("CLOSE");
+        closeButton.setPreferredSize(new Dimension(50, 16));
+        closeButton.setFont(new Font("Consolas", Font.PLAIN, 10));
+        closeButton.setMargin(new Insets(4, 0, 2, 0));
+        closeButton.setFocusPainted(false);
         closeButton.addActionListener(this);
-        saveButton = new Button("SAVE");
+        saveButton = new JButton("SAVE");
+        saveButton.setPreferredSize(new Dimension(50, 16));
+        saveButton.setFont(new Font("Consolas", Font.PLAIN, 10));
+        saveButton.setMargin(new Insets(4, 0, 2, 0));
+        saveButton.setFocusPainted(false);
+        saveButton.addActionListener(this);
+
         saveButton.addActionListener(this);
         southPanel.add(closeButton);
         southPanel.add(saveButton);

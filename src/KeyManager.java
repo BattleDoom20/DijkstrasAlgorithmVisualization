@@ -1,3 +1,8 @@
+/*
+Filename: KeyManager.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Arrays;

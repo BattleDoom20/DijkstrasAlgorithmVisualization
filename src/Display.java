@@ -1,3 +1,8 @@
+/*
+Filename: Display.java
+Author: Hyperrun Academy: Cavite Chapter - FEU TECH
+ */
+
 import javax.swing.*;
 import java.awt.*;
 
