@@ -13,7 +13,7 @@ public class Visualization
     private MouseManager mouseManager;
     private int width, height;
 
-    private boolean showInstructions, playSimulation, endSimulation;
+    private boolean playSimulation, endSimulation;
     private boolean inputtingPoints, inputtingEdge;
 
     private int sourceNode;
@@ -60,17 +60,15 @@ public class Visualization
 
         lines = new int[][]
                 {
-                        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, // 0-initialize table
-                        {13},                                   // 1-initialize current node
-                        {14},                                   // 2-while loop
-                        {16},                                   // 3-for loop
-                        {18},                                   // 4-if statement
-                        {20},                                   // 5-compute cost
-                        {21},                                   // 6-check if lowest (if statement)
-                        {23},                                   // 7-set distance
-                        {24},                                   // 8-set previous
-                        {28},                                   // 9-add current to visited
-                        {29}                                    // 10-make current to the next node
+                        {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ,13}, // 0-initialize table
+                        {15},                                           // 1-initialize current node
+                        {16},                                           // 2-while loop
+                        {18},                                           // 3-remove the current from unvisited
+                        {19},                                           // 4-for loop
+                        {21},                                           // 5-if statement
+                        {23, 24, 25, 26, 27},                           // 6-check if lowest (if statement)
+                        {30},                                           // 7-add current to visited
+                        {31, 32, 33, 34, 35}                            // 8-choose next node
                 };
 
         reset();
@@ -91,8 +89,8 @@ public class Visualization
                 {
                     for(int i = 0; i < points.size(); i++)
                     {
-                        if(mouseManager.getMouseX() >= points.get(i).x - 3 && mouseManager.getMouseX() <= points.get(i).x + 3 && // checks which point is pressed
-                           mouseManager.getMouseY() >= points.get(i).y - 3 && mouseManager.getMouseY() <= points.get(i).y + 3 && // checks which point is pressed
+                        if(mouseManager.getMouseX() >= points.get(i).x - 4 && mouseManager.getMouseX() <= points.get(i).x + 4 && // checks which point is pressed
+                           mouseManager.getMouseY() >= points.get(i).y - 4 && mouseManager.getMouseY() <= points.get(i).y + 4 && // checks which point is pressed
                            !selectedPoints.contains(i))  // prevents cycle
                         {
                             boolean flag = true;
@@ -131,7 +129,7 @@ public class Visualization
                         selectedPoints = new ArrayList<>();
                     }
                 }
-                else if(!playSimulation) // selects starting node
+                else if(!playSimulation && linePointer == 0) // selects starting node
                 {
                     for(int i = 0; i < points.size(); i++)
                     {
@@ -148,7 +146,6 @@ public class Visualization
                         }
                     }
                 }
-                showInstructions = false;
             }
             else if(mouseManager.isRightPressed())
             {
@@ -156,7 +153,6 @@ public class Visualization
                 {
                     selectedPoints = new ArrayList<>();
                 }
-                showInstructions = false;
             }
 
             if(keyManager.keyUp(KeyEvent.VK_ENTER))
@@ -179,6 +175,8 @@ public class Visualization
                     }
                     linePointer++;
                     linePointerChanged = true;
+                    pointColors.set(sourceNode, Color.BLUE);
+                    detailsPanel.setDisableEdit(true);
                 }
                 else
                 {
@@ -199,7 +197,6 @@ public class Visualization
                         }
                     }
                 }
-                showInstructions = true;
             }
             else if(keyManager.keyUp(KeyEvent.VK_R))
             {
@@ -230,8 +227,6 @@ public class Visualization
                     {
                         inputtingEdge = false;
                         inputtingPoints = true;
-                        points.remove(points.size() - 1);
-                        pointColors.remove(pointColors.size() - 1);
                     }
                 }
             }
@@ -249,9 +244,12 @@ public class Visualization
             {
                 if(!playSimulation)
                 {
-                    initSim();
+                    if(linePointer == 0)
+                    {
+                        initSim();
+                    }
                     playSimulation = true;
-                    showInstructions = false;
+                    simulationTimer = 0;
                 }
                 else
                 {
@@ -299,14 +297,14 @@ public class Visualization
             for(int i = 0; i < points.size(); i++)
             {
                 graphics.setColor(pointColors.get(i));
-                graphics.drawRect(points.get(i).x - 3, points.get(i).y - 3, 6, 6);
+                graphics.drawRect(points.get(i).x - 3, points.get(i).y - 3, 8, 8);
             }
         }
         else if(inputtingEdge)
         {
             for(Point point : points)
             {
-                graphics.fillRect(point.x - 3, point.y - 3, 6, 6);
+                graphics.fillRect(point.x - 3, point.y - 3, 8, 8);
             }
 
             if(selectedPoints.size() > 0)
@@ -390,30 +388,51 @@ public class Visualization
         }
 
         // draw instructions
-        if(showInstructions)
+        graphics.setColor(Color.MAGENTA);
+        if(inputtingPoints)
         {
-            graphics.setColor(Color.MAGENTA);
-            if(inputtingPoints)
+            graphics.drawString("ADDING POINTS", 0, height - 85);
+            graphics.drawString("Mouse1 to add a node/point.", 0, height - 75);
+            graphics.drawString("Z to undo.", 0, height - 65);
+            graphics.drawString("R to reset.", 0, height - 55);
+            graphics.drawString("Enter to proceed to adding edges.", 0, height - 45);
+        }
+        else if(inputtingEdge)
+        {
+            graphics.drawString("ADDING EDGES", 0, height - 95);
+            graphics.drawString("Mouse 1 to select a point/node.", 0, height - 85);
+            graphics.drawString("Mouse 2 to cancel selection.", 0, height - 75);
+            graphics.drawString("Z to undo.", 0, height - 65);
+            graphics.drawString("R to reset.", 0, height - 55);
+            graphics.drawString("Enter to confirm.", 0, height - 45);
+        }
+        else if(endSimulation)
+        {
+            graphics.drawString("FINISHED", 0, height - 55);
+            graphics.drawString("Press ENTER to Continue.", 0, height - 45);
+        }
+        else if(playSimulation)
+        {
+            graphics.drawString("PLAYING", 0, height - 55);
+            graphics.drawString("SPACE to pause.", 0, height - 45);
+        }
+        else
+        {
+            if(linePointer == 0)
             {
-                graphics.drawString("Mouse1 to add a node/point.", 0, height - 65);
-                graphics.drawString("Z to undo.", 0, height - 55);
-                graphics.drawString("R to reset.", 0, height - 45);
-                graphics.drawString("Enter to proceed to adding edges.", 0, height - 35);
-            }
-            else if(inputtingEdge)
-            {
-                graphics.drawString("Mouse 1 to select a point/node.", 0, height - 75);
-                graphics.drawString("Mouse 2 to cancel selection.", 0, height - 65);
-                graphics.drawString("Z to undo.", 0, height - 55);
-                graphics.drawString("R to reset.", 0, height - 45);
-                graphics.drawString("Enter to confirm.", 0, height - 35);
+                graphics.drawString("SIMULATION READY", 0, height - 85);
+                graphics.drawString("Mouse1 to select starting node.", 0, height - 75);
+                graphics.drawString("ENTER to step forward.", 0, height - 65);
+                graphics.drawString("SPACE to play.", 0, height - 55);
+                graphics.drawString("ESC to reset.", 0, height - 45);
             }
             else
             {
-                graphics.drawString("ENTER to step forward.", 0, height - 65);
-                graphics.drawString("SPACE to play/pause.", 0, height - 55);
-                graphics.drawString("R to restart simulation.", 0, height - 45);
-                graphics.drawString("ESC to reset.", 0, height - 35);
+                graphics.drawString("PAUSED", 0, height - 85);
+                graphics.drawString("ENTER to step forward.", 0, height - 75);
+                graphics.drawString("SPACE to play.", 0, height - 65);
+                graphics.drawString("R to restart simulation.", 0, height - 55);
+                graphics.drawString("ESC to reset.", 0, height - 45);
             }
         }
 
@@ -440,7 +459,6 @@ public class Visualization
     {
         drawCurEdge = true;
         drawCurNode = true;
-        showInstructions = true;
         steps = dijkstra.shortestPath(sourceNode);
         pointColors.set(steps.get(stepPointer).currentNode, Color.MAGENTA);
         numRepeatWhileLoop = steps.get(0).valuesTable.length;
@@ -475,19 +493,15 @@ public class Visualization
                 linePointerChanged = true;
                 if(numRepeatForLoop > 0)
                 {
-                    if(linePointer == 3)
+                    if(linePointer == 3 || linePointer == 4)
                     {
                         drawCurEdge = false;
                     }
-                    if((linePointer == 5 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]) ||
-                       (linePointer == 7 && !steps.get(stepPointer).smallerNeighbors[steps.get(stepPointer).smallerNeighbors.length - numRepeatForLoop]))
+                    //if((linePointer == 5 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]) ||
+                    //  (linePointer == 7 && !steps.get(stepPointer).smallerNeighbors[steps.get(stepPointer).smallerNeighbors.length - numRepeatForLoop]))
+                    if(linePointer == 7 || (linePointer == 6 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]))
                     {
-                        linePointer = 3;
-                        numRepeatForLoop--;
-                    }
-                    if(linePointer == 9)
-                    {
-                        linePointer = 3;
+                        linePointer = 4;
                         numRepeatForLoop--;
                         drawCurEdge = false;
                         currentShortestNeighbor[currentNeighbor] = steps.get(stepPointer).valuesTable[currentNeighbor][1];
@@ -495,15 +509,15 @@ public class Visualization
                 }
                 else if(numRepeatForLoop == 0)
                 {
-                    if(linePointer == 4 || linePointer == 10)
+                    if(linePointer == 5 || linePointer == 7 || linePointer == 8)
                     {
                         drawCurEdge = false;
-                        if(linePointer == 4)
+                        if(linePointer == 5)
                         {
-                            linePointer = 9;
+                            linePointer = 7;
                         }
                     }
-                    else if(linePointer == 11)
+                    else if(linePointer == 9)
                     {
                         linePointer = 2;
                         drawCurEdge = false;
@@ -512,10 +526,6 @@ public class Visualization
                             stepPointer++;
                             numRepeatForLoop = steps.get(stepPointer).neighborsToVisit.length;
                         }
-                        else
-                        {
-                            drawCurNode = false;
-                        }
                     }
                 }
             }
@@ -523,8 +533,8 @@ public class Visualization
             {
                 if(linePointer == 2)
                 {
+                    drawCurEdge = false;
                     linePointer = 0;
-                    showInstructions = true;
                     endSimulation = true;
                     pointColors.set(steps.get(stepPointer).currentNode, Color.RED);
                     codeSim.resetLines();
@@ -558,7 +568,6 @@ public class Visualization
         codeSim.resetLines();
         inputtingPoints = true;
         inputtingEdge = false;
-        showInstructions = true;
         playSimulation = false;
         simulationTimer = 0;
         linePointer = -1;
@@ -568,7 +577,6 @@ public class Visualization
         edges = new ArrayList<>();
         selectedPoints = new ArrayList<>();
         detailsPanel.updateList(edges);
-        showInstructions = true;
         sourceNode = 0;
         currentNeighbor = 0;
         currentShortestNeighbor = null;

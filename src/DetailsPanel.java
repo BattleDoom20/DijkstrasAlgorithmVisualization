@@ -9,20 +9,20 @@ public class DetailsPanel implements MouseListener
     private ArrayList<int[]> edges;
     public final JFrame frame;
     private final Font font;
-    private final JScrollPane scrollPane;
     private final JPanel panel;
     private ArrayList<JLabel> entries;
-    private JButton addButton;
+    private boolean disableEdit;
 
     public DetailsPanel(JFrame frame)
     {
+        disableEdit = false;
         this.frame = frame;
         entries = new ArrayList<>();
         font = new Font("Consolas", Font.PLAIN, 13);
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(new Color(50, 50, 100));
-        scrollPane = new JScrollPane(panel);
+        JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setPreferredSize(new Dimension(200, frame.getHeight()));
         updateList(null);
         frame.add(scrollPane, BorderLayout.WEST);
@@ -66,14 +66,22 @@ public class DetailsPanel implements MouseListener
         updateList();
     }
 
+    public void setDisableEdit(boolean value)
+    {
+        disableEdit = value;
+    }
+
     @Override
     public void mouseClicked(MouseEvent e)
     {
-        for(int i = 0; i < entries.size(); i++)
+        if(!disableEdit)
         {
-            if(e.getSource() == entries.get(i))
+            for(int i = 0; i < entries.size(); i++)
             {
-                new EdgePrompt(frame,this, edges.get(i));
+                if(e.getSource() == entries.get(i))
+                {
+                    new EdgePrompt(frame, this, edges.get(i));
+                }
             }
         }
     }

@@ -1,18 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
 
-/*
-TODO
-    1. Draw phase indicator on bottom right
-    2. Draw playing/pause indicator on top left
- */
-
 public class Main
 {
     public static void main(String[] args)
     {
         JFrame statusFrame = new JFrame("Code Simulation");
-        statusFrame.setSize(new Dimension(600, 530));
+        statusFrame.setSize(new Dimension(750, 636));
         statusFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         statusFrame.setResizable(false);
         statusFrame.setLocationRelativeTo(null);

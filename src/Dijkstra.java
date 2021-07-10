@@ -52,9 +52,11 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
     {
         ArrayList<StepData> steps = new ArrayList<>();
         LinkedList<Integer> visited = new LinkedList<>();
+        LinkedList<Integer> unvisited = new LinkedList<>();
         int[][] values = new int[adj.size()][2]; // this will contain the vertex with its cost to reach starting from the source and the vertex that is reached before it. Rows = vertices, columns = cost and previous vertex.
         for(int i = 0; i < values.length; i++)
         {
+            unvisited.add(i);
             if(i == source) // if the vertex is the source, initialize it to 0 cost and previous to itself. else, set the cost to infinity (at this case Integer.MAX_VALUE).
             {
                 values[i][0] = 0;
@@ -66,8 +68,9 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
         }
 
         int current = source;
-        while(visited.size() != adj.size())
+        while(!unvisited.isEmpty())
         {
+            unvisited.remove(new Integer(current));
             boolean[] neighborsToVisit = new boolean[adj.get(current).size()];
             boolean[] smallerNeighbors = new boolean[adj.get(current).size()];
             int[] neighbors = new int[adj.size()];
@@ -101,14 +104,21 @@ public class Dijkstra // A graph ADT that computes the shortest path using Dijks
             // find the neighbor with lowest cost then assign it to the current.
             int lowestIndex = 0;
             int lowestDistance = Integer.MAX_VALUE;
+            boolean changed = false;
             for(Edge edge : adj.get(current))
             {
                 if(!visited.contains(edge.destination) && values[edge.destination][0] < lowestDistance)
                 {
                     lowestIndex = edge.destination;
                     lowestDistance = values[edge.destination][0];
+                    changed = true;
                 }
             }
+            if(!changed && !unvisited.isEmpty())
+            {
+                lowestIndex = unvisited.get(0);
+            }
+
             int[][] stepValue = new int[values.length][];
             for(int i = 0; i < stepValue.length; i++)
             {
