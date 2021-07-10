@@ -5,11 +5,15 @@ public class Main
 {
     public static void main(String[] args)
     {
+        KeyManager keyManager = new KeyManager();
+        MouseManager mouseManager = new MouseManager();
+
         JFrame statusFrame = new JFrame("Code Simulation");
         statusFrame.setSize(new Dimension(750, 636));
         statusFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         statusFrame.setResizable(false);
         statusFrame.setLocationRelativeTo(null);
+        statusFrame.addKeyListener(keyManager);
 
         CodeSim codeSimPanel = new CodeSim("code");
         codeSimPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -22,7 +26,7 @@ public class Main
         statusFrame.add(codeSimPanel);
         statusFrame.setVisible(true);
 
-        Visualization visualization = new Visualization(codeSimPanel, detailsPanel);
+        Visualization visualization = new Visualization(codeSimPanel, detailsPanel, keyManager, mouseManager);
         visualization.run();
     }
 }

@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Visualization
 {
@@ -35,10 +36,12 @@ public class Visualization
     private ArrayList<Integer> selectedPoints;
     private ArrayList<StepData> steps;
 
-    public Visualization(CodeSim codeSim, DetailsPanel detailsPanel)
+    public Visualization(CodeSim codeSim, DetailsPanel detailsPanel, KeyManager keyManager, MouseManager mouseManager)
     {
         this.codeSim = codeSim;
         this.detailsPanel = detailsPanel;
+        this.keyManager = keyManager;
+        this.mouseManager = mouseManager;
         points = new ArrayList<>();
         pointColors = new ArrayList<>();
         edges = new ArrayList<>();
@@ -48,9 +51,6 @@ public class Visualization
 
     private void init()
     {
-        keyManager = new KeyManager();
-        mouseManager = new MouseManager();
-
         display = new Display();
         width = display.getFrame().getWidth();
         height = display.getFrame().getHeight();
@@ -377,9 +377,10 @@ public class Visualization
                 graphics.setColor(Color.MAGENTA);
                 for(int i = 0; i < points.size(); i++)
                 {
-                    if(i == currentNeighbor)
+                    int sourceIndex = steps.get(stepPointer).currentNode;
+                    if(i == currentNeighbor && sourceIndex != -1)
                     {
-                        source = points.get(steps.get(stepPointer).currentNode);
+                        source = points.get(sourceIndex);
                         destination = points.get(currentNeighbor);
                         graphics.drawLine(source.x, source.y, destination.x, destination.y);
                     }
@@ -480,6 +481,11 @@ public class Visualization
             currentShortestNeighbor[i] = i;
         }
         endSimulation = false;
+
+        for(StepData stepData : steps)
+        {
+            System.out.println(Arrays.toString(stepData.neighbors));
+        }
     }
 
     private void stepForward()
@@ -495,12 +501,6 @@ public class Visualization
                 linePointerChanged = true;
                 if(numRepeatForLoop > 0)
                 {
-                    if(linePointer == 3 || linePointer == 4)
-                    {
-                        drawCurEdge = false;
-                    }
-                    //if((linePointer == 5 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]) ||
-                    //  (linePointer == 7 && !steps.get(stepPointer).smallerNeighbors[steps.get(stepPointer).smallerNeighbors.length - numRepeatForLoop]))
                     if(linePointer == 7 || (linePointer == 6 && !steps.get(stepPointer).neighborsToVisit[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop]))
                     {
                         linePointer = 4;
@@ -545,6 +545,10 @@ public class Visualization
             if(linePointer == 4 && numRepeatForLoop != 0)
             {
                 currentNeighbor = steps.get(stepPointer).neighbors[steps.get(stepPointer).neighborsToVisit.length - numRepeatForLoop];
+            }
+            if(linePointer == 3 || linePointer == 4)
+            {
+                drawCurEdge = false;
             }
         }
 
