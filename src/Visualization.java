@@ -408,8 +408,10 @@ public class Visualization
         }
         else if(endSimulation)
         {
-            graphics.drawString("FINISHED", 0, height - 55);
-            graphics.drawString("Press ENTER to Continue.", 0, height - 45);
+            graphics.drawString("FINISHED", 0, height - 75);
+            graphics.drawString("Press ENTER or R to Continue.", 0, height - 65);
+            graphics.drawString("SPACE to play again.", 0, height - 55);
+            graphics.drawString("ESC to reset.", 0, height - 45);
         }
         else if(playSimulation)
         {
