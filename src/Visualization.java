@@ -581,6 +581,7 @@ public class Visualization
 
     private void reset() // resets everything including inputted points and edges
     {
+        detailsPanel.setDisableEdit(false);
         drawCurEdge = true;
         drawCurNode = true;
         codeSim.resetLines();
