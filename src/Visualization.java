@@ -353,7 +353,7 @@ public class Visualization
             Point mid = new Point(Math.abs(points.get(edge[0]).x - points.get(edge[1]).x) / 2, Math.abs(points.get(edge[0]).y - points.get(edge[1]).y) / 2);
             Point leftPoint = source.x < destination.x ? source : destination;
             Point topPoint = source.y < destination.y ? source : destination;
-            graphics.setColor(Color.BLUE);
+            graphics.setColor(Color.GREEN);
             graphics.drawString(String.valueOf(edge[2]), leftPoint.x + mid.x, topPoint.y + mid.y);
         }
 

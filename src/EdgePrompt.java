@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class EdgePrompt extends JFrame implements ActionListener
 {
@@ -38,6 +40,13 @@ public class EdgePrompt extends JFrame implements ActionListener
         textField = new JTextField();
         textField.setText(String.valueOf(edge[2]));
         textField.setPreferredSize(new Dimension(50, 16));
+        textField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                textField.setEditable((e.getKeyChar() >= '0' && e.getKeyChar() <= '9') || e.getKeyChar() == KeyEvent.VK_BACK_SPACE);
+            }
+        });
+
         distance.add(label);
         distance.add(textField);
         centerPanel.add(info);
@@ -78,11 +87,16 @@ public class EdgePrompt extends JFrame implements ActionListener
         }
         if(e.getSource() == saveButton)
         {
-            edge[2] = Integer.parseInt(textField.getText());
-            detailsPanel.updateList();
-            parent.setEnabled(true);
-            detailsPanel.frame.setEnabled(true);
-            dispose();
+            try {
+                edge[2] = Integer.parseInt(textField.getText());
+                detailsPanel.updateList();
+                parent.setEnabled(true);
+                detailsPanel.frame.setEnabled(true);
+                dispose();
+            }
+            catch (Exception ae) {
+                JOptionPane.showMessageDialog(this,"Invalid input! Please try again!","Alert",JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 }
